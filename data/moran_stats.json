@@ -1,0 +1,15 @@
+{
+  "moran_I": 0.4842,
+  "moran_p": 0.001,
+  "moran_z": 13.43,
+  "permutations": 999,
+  "n_comunas": 343,
+  "metric_mean": 42.6,
+  "clusters": {
+    "Alto-Alto": 66,
+    "Bajo-Bajo": 34,
+    "Alto-Bajo": 12,
+    "Bajo-Alto": 1
+  },
+  "no_sig": 230
+}
