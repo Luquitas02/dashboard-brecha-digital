@@ -346,7 +346,7 @@ with st.sidebar:
 
 # ---------------------------------------------------------------- Header
 st.title("Brecha digital y territorio en Chile")
-st.caption("Visualización de Datos · Universidad de Concepción — Deliverable 3")
+st.caption("Visualización de Datos · Universidad de Concepción — Entregable 3")
 st.markdown(
     "La conectividad digital en Chile no se distribuye al azar: se **agrupa en el "
     "territorio**. Este panel reproduce de forma **interactiva** los seis gráficos del "
@@ -374,8 +374,8 @@ with tab_plots:
         st.caption(f"🟣 Resaltando **{destacar}** en los gráficos.")
     else:
         st.caption("💡 Pasa el mouse para ver valores · resalta una región desde la barra "
-                   "lateral · cada gráfico tiene zoom y «restablecer» en su barra (arriba a la "
-                   "derecha al pasar el mouse), o doble-clic para volver. Izquierda 1–3: qué "
+                   "lateral · usa la barra de cada gráfico (arriba a la derecha) o doble-clic "
+                   "para zoom; el radar tiene su botón «Restablecer vista». Izquierda 1–3: qué "
                    "falta y a quién · derecha 4–6: dónde y cuándo.")
 
     r1l, r1r = st.columns(2)
