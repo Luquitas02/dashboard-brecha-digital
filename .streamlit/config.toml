@@ -1,8 +1,8 @@
 [theme]
 base = "light"
 primaryColor = "#21456B"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F4F0E8"
+backgroundColor = "#F4F0E8"
+secondaryBackgroundColor = "#FBF8F2"
 textColor = "#2a2a2a"
 font = "sans serif"
 

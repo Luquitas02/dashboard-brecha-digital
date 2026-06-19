@@ -37,7 +37,7 @@ PALETA_BUBBLE = {"Básica o menos": "#d73027", "Media": "#fc8d59",
 PROM_REGIONAL = 44.6
 CLUSTER_COLORS = {
     "Alto-Alto": "#b2182b", "Bajo-Bajo": "#2166ac", "Alto-Bajo": "#ef8a62",
-    "Bajo-Alto": "#67a9cf", "No significativo": "#e6e2d8",
+    "Bajo-Alto": "#67a9cf", "No significativo": "#BDB5A4",   # gris cálido visible sobre el crema
 }
 ORDEN_REGIONES = [
     "Arica y Parinacota", "Tarapacá", "Antofagasta", "Atacama", "Coquimbo",
@@ -180,7 +180,7 @@ def fig_dumbbell(destacar=None):
                        text=f"Promedio regional ({coma(PROM_REGIONAL, 1)}%)",
                        showarrow=False, font=dict(size=10, color=C_PROM), xanchor="left")
     fig.update_xaxes(title="Hogares con internet fija (%)", range=[0, 92],
-                     showgrid=True, gridcolor="#e6e2d8")
+                     showgrid=True, gridcolor="#D8CFBD")
     fig.update_yaxes(autorange="reversed")
     return _style(fig, 470)
 
@@ -193,8 +193,8 @@ def fig_bubble():
                              "pct_internet": "Hogares con internet fija (%)",
                              "nivel": "Nivel educativo", "n_hogares": "N° hogares"})
     fig.update_traces(marker=dict(opacity=0.8, line=dict(width=0.5, color="white")))
-    fig.update_xaxes(showgrid=True, gridcolor="#e6e2d8")
-    fig.update_yaxes(showgrid=True, gridcolor="#e6e2d8")
+    fig.update_xaxes(showgrid=True, gridcolor="#D8CFBD")
+    fig.update_yaxes(showgrid=True, gridcolor="#D8CFBD")
     return _style(fig, 470)
 
 
@@ -219,6 +219,12 @@ def fig_choropleth(modo="% internet fija", destacar=None):
             opacity=0.8, hover_name="comuna_nombre",
             hover_data={"region_nombre": True, "tiene_internet_fija": ":.1f", "CUT": False},
             labels={"lisa_label": "Cluster"})
+    if destacar:   # contorno morado de las comunas de la región resaltada
+        sub = df[df["region_nombre"] == destacar]
+        fig.add_trace(go.Choroplethmap(
+            geojson=GEO, locations=sub["CUT"], z=[1] * len(sub),
+            colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0)"]], showscale=False,
+            marker=dict(line=dict(color=C_DESTACA, width=2)), hoverinfo="skip"))
     fig.update_layout(height=560, margin=dict(l=0, r=0, t=0, b=0),
                       paper_bgcolor="rgba(0,0,0,0)",
                       legend=dict(orientation="h", y=-0.02))
@@ -244,8 +250,8 @@ def fig_radar(destacar=None):
     fig.update_layout(polar=dict(
         bgcolor="rgba(0,0,0,0)",
         radialaxis=dict(range=[0, 95], tickvals=[20, 40, 60, 80], ticksuffix="%",
-                        gridcolor="#d8d2c4"),
-        angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#d8d2c4")))
+                        gridcolor="#CFC6B2"),
+        angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#CFC6B2")))
     fig = _style(fig, 470, legend_bottom=False)
     fig.update_layout(margin=dict(l=70, r=70, t=20, b=20),
                       legend=dict(orientation="h", yanchor="top", y=-0.02,
@@ -278,7 +284,7 @@ def fig_slope(destacar=None):
                                  line=dict(color=C_DESTACA, width=2.6, dash="dot"),
                                  hovertemplate="%{x}: %{y:.0f}%<extra>" + destacar + "</extra>"))
     fig.update_yaxes(title="Hogares con internet fija (%)", range=[20, 82],
-                     showgrid=True, gridcolor="#e6e2d8")
+                     showgrid=True, gridcolor="#D8CFBD")
     return _style(fig, 470)
 
 
@@ -293,7 +299,7 @@ def fig_histograma():
     fig.add_annotation(x=m, xref="x", yref="paper", y=1.07,
                        text=f"Promedio comunal: {coma(m, 0)}%", showarrow=False,
                        font=dict(color=C_RURAL, size=12), xanchor="left", xshift=4)
-    fig.update_yaxes(title="N° de comunas", showgrid=True, gridcolor="#e6e2d8")
+    fig.update_yaxes(title="N° de comunas", showgrid=True, gridcolor="#D8CFBD")
     fig.update_xaxes(title="% hogares con internet fija (comuna)", showgrid=False)
     fig = _style(fig, 380, legend_bottom=False)
     fig.update_layout(margin=dict(l=10, r=10, t=36, b=10))   # aire arriba para la anotación
@@ -308,6 +314,14 @@ with st.sidebar:
     st.caption("Resalta la región en el **heatmap, dumbbell, radar y evolución** (pestaña 1), "
                "y **centra el mapa + marca sus comunas en el diagrama de Moran** (pestaña 2). "
                "El gráfico 3 (por edad/educación) es nacional y no depende de la región.")
+    if destacar:
+        fija = MATRIZ.loc[destacar, "Internet fija"]
+        rank = int((MATRIZ["Internet fija"] > fija).sum()) + 1
+        brecha = RA.set_index("region_nombre").loc[destacar, "brecha"]
+        st.markdown(f"#### 🟣 {destacar}")
+        mc1, mc2 = st.columns(2)
+        mc1.metric("Internet fija", f"{fija:.0f}%", help=f"Puesto {rank} de 16 regiones")
+        mc2.metric("Brecha urb-rural", f"+{brecha:.0f} pp")
     st.divider()
     st.caption("Censo 2024 (INE) · CASEN 2017/2022/2024 (MDSF)")
     with open(os.path.join(DATA, "comunas.csv"), "rb") as f:
