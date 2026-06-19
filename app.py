@@ -239,7 +239,7 @@ def fig_choropleth(modo="% internet fija", destacar=None):
     return fig
 
 
-def fig_radar(destacar=None, uirev=0):
+def fig_radar(destacar=None):
     cats = ["Internet móvil", "Computador", "Internet fija", "Tablet"]
     fig = go.Figure()
     for region, color in ACENTOS.items():
@@ -263,18 +263,11 @@ def fig_radar(destacar=None, uirev=0):
         angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#CFC6B2")))
     fig = _style(fig, 500, legend_bottom=False)
     # Se encoge el área polar (deja una banda abajo) para que la leyenda no la tape.
-    # uirevision constante => el zoom persiste entre interacciones; cambia solo con
-    # el botón "Restablecer vista" (bump del contador) => entonces Plotly resetea.
     fig.update_layout(margin=dict(l=70, r=70, t=20, b=8),
-                      uirevision=f"radar-{uirev}",
                       polar=dict(domain=dict(y=[0.16, 1.0])),
                       legend=dict(orientation="h", yanchor="top", y=0.11,
                                   xanchor="center", x=0.5))
     return fig
-
-
-def _reset_radar():
-    st.session_state.radar_rev = st.session_state.get("radar_rev", 0) + 1
 
 
 def fig_slope(destacar=None):
@@ -341,15 +334,13 @@ with st.sidebar:
         mc1.metric("Internet fija", f"{fija:.0f}%", help=f"Puesto {rank} de 16 regiones")
         mc2.metric("Brecha urb-rural", f"+{brecha:.0f} pp")
     st.divider()
-    st.caption("Censo 2024 (INE) · CASEN 2017/2022/2024 (MDSF)")
     with open(os.path.join(DATA, "comunas.csv"), "rb") as f:
         st.download_button("⬇️ Descargar datos comunales (CSV)", f, "comunas_brecha.csv",
                            "text/csv")
 
 # ---------------------------------------------------------------- Header
 st.title("Brecha digital y territorio en Chile")
-st.caption("Censo 2024 (INE) · CASEN 2017/2022/2024 (MDSF) · Visualización de Datos — "
-           "Universidad de Concepción")
+st.caption("Visualización de Datos · Universidad de Concepción — Deliverable 3")
 st.markdown(
     "La conectividad digital en Chile no se distribuye al azar: se **agrupa en el "
     "territorio**. Este panel reproduce de forma **interactiva** los seis gráficos del "
@@ -373,45 +364,43 @@ tab_plots, tab_spatial, tab_rep = st.tabs(
 
 # ---------------------------------------------------------------- Los 6 gráficos
 with tab_plots:
-    msg = (f"🟣 Resaltando **{destacar}** en los gráficos." if destacar
-           else "Pasa el mouse para ver valores exactos · usa la barra lateral para resaltar "
-                "una región · izq. 1–3 = qué falta y a quién · der. 4–6 = dónde y cuándo.")
-    st.caption(msg)
+    if destacar:
+        st.caption(f"🟣 Resaltando **{destacar}** en los gráficos.")
+    else:
+        st.caption("💡 Pasa el mouse para ver valores · resalta una región desde la barra "
+                   "lateral · cada gráfico tiene zoom y «restablecer» en su barra (arriba a la "
+                   "derecha al pasar el mouse), o doble-clic para volver. Izquierda 1–3: qué "
+                   "falta y a quién · derecha 4–6: dónde y cuándo.")
 
     r1l, r1r = st.columns(2)
-    with r1l:
+    with r1l.container(border=True):
         st.markdown("**1 · Servicios de conectividad por región**")
         st.caption("% de hogares con cada servicio por región (Censo 2024).")
         st.plotly_chart(fig_heatmap(destacar), width="stretch", key="hm")
-    with r1r:
+    with r1r.container(border=True):
         st.markdown("**4 · Internet fija por comuna**")
         st.caption("% de hogares con internet fija por comuna (343). Zoom y paneo disponibles; "
                    "clusters en la pestaña espacial.")
         st.plotly_chart(fig_choropleth(destacar=destacar), width="stretch", key="map_main")
 
     r2l, r2r = st.columns(2)
-    with r2l:
+    with r2l.container(border=True):
         st.markdown("**2 · Acceso urbano vs rural**")
         st.caption("Internet fija por región: hogares urbanos (navy) y rurales (terracota); "
                    "la brecha en pp a la derecha.")
         st.plotly_chart(fig_dumbbell(destacar), width="stretch", key="db")
-    with r2r:
+    with r2r.container(border=True):
         st.markdown("**5 · Perfiles de conectividad regional**")
         st.caption("Cuatro servicios para tres regiones contrastantes (% de hogares).")
-        st.plotly_chart(fig_radar(destacar, st.session_state.get("radar_rev", 0)),
-                        width="stretch", key="radar",
-                        config={"displayModeBar": True, "displaylogo": False})
-        st.button("↩️ Restablecer vista del radar", key="reset_radar",
-                  on_click=_reset_radar,
-                  help="Vuelve el radar a su vista original (deshace el zoom o desplazamiento).")
+        st.plotly_chart(fig_radar(destacar), width="stretch", key="radar")
 
     r3l, r3r = st.columns(2)
-    with r3l:
+    with r3l.container(border=True):
         st.markdown("**3 · Acceso por edad y nivel educativo**")
         st.caption("% con internet fija por edad del jefe de hogar y nivel educativo; "
                    "el tamaño de la burbuja es el N° de hogares.")
         st.plotly_chart(fig_bubble(), width="stretch", key="bub")
-    with r3r:
+    with r3r.container(border=True):
         st.markdown("**6 · Evolución del acceso (CASEN 2017–2024)**")
         st.caption("% de hogares con internet fija en 2017, 2022 y 2024.")
         st.plotly_chart(fig_slope(destacar), width="stretch", key="slope")
@@ -436,13 +425,13 @@ with tab_spatial:
             "rezago (Bajo-Bajo).")
 
     left, right = st.columns([3, 2])
-    with left:
+    with left.container(border=True):
         modo = st.radio("Mapa:", ["% internet fija", "Clusters LISA"], horizontal=True)
         if destacar:
             st.caption(f"🟣 Mapa centrado en **{destacar}**.")
         st.plotly_chart(fig_choropleth(modo, destacar), width="stretch", key="map_spatial")
 
-    with right:
+    with right.container(border=True):
         st.markdown("**Diagrama de dispersión de Moran**")
         st.caption("Eje X: conectividad (estandarizada). Eje Y: promedio de los vecinos. "
                    "La pendiente es el Moran's I; cada cuadrante es un tipo de cluster.")
@@ -482,12 +471,12 @@ with tab_spatial:
 
     st.divider()
     h_col, t_col = st.columns([3, 2])
-    with h_col:
+    with h_col.container(border=True):
         st.markdown("**Distribución del acceso entre comunas**")
         st.caption("Cuántas comunas hay en cada nivel de internet fija. La cola izquierda "
                    "(comunas muy rezagadas) es la que tira el promedio comunal hacia abajo.")
         st.plotly_chart(fig_histograma(), width="stretch", key="hist")
-    with t_col:
+    with t_col.container(border=True):
         st.markdown("**Comunas extremas**")
         top = (df.nlargest(5, "tiene_internet_fija")[["comuna_nombre", "tiene_internet_fija"]]
                .rename(columns={"comuna_nombre": "Comuna", "tiene_internet_fija": "%"}))
@@ -527,5 +516,5 @@ with tab_rep:
         st.warning("Falta assets/d3_infografia.png (correr el ensamble del reporte).")
 
 st.divider()
-st.caption("Datos: Censo 2024 (INE) y CASEN 2017/2022/2024 (MDSF). "
+st.caption("Fuentes: Censo 2024 (INE) · CASEN 2017/2022/2024 (MDSF). "
            "Autocorrelación espacial: Moran's I (contigüidad Queen, 999 permutaciones).")
