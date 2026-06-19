@@ -31,7 +31,8 @@ FONDO = "#F4F0E8"
 ACENTOS = {"Metropolitana": "#2C5F8A", "O'Higgins": "#C8702D", "La Araucanía": "#3C8C8C"}
 C_URBANO, C_RURAL = "#2C5F8A", "#C8702D"
 C_PROM, C_RESTO = "#333333", "#B8B2A6"
-C_DESTACA = "#E0A012"   # ámbar/dorado para resaltar: complementario al azul, distinto del resto
+C_DESTACA = "#DB2777"   # magenta/rosa fuerte: único hue ausente de la paleta -> resalta en TODOS
+                        # los gráficos (incl. radar, donde lo cálido se camufla). No es morado.
 PALETA_BUBBLE = {"Básica o menos": "#d73027", "Media": "#fc8d59",
                  "Técnica/Sup. inc.": "#91bfdb", "Superior completa": "#4575b4"}
 PROM_REGIONAL = 44.6
@@ -53,6 +54,13 @@ YEARS = ["CASEN 2017", "CASEN 2022", "CASEN 2024"]
 def coma(x, d=2):
     """Formatea con coma decimal (convención en español)."""
     return f"{x:.{d}f}".replace(".", ",")
+
+
+def _rgba(hex_color, a):
+    """Convierte '#RRGGBB' + alpha a 'rgba(r,g,b,a)' (para rellenos translúcidos)."""
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{a})"
 
 
 def _style(fig, h=430, legend_bottom=True):
@@ -245,8 +253,9 @@ def fig_radar(destacar=None):
         vals = [MATRIZ.loc[destacar, c] for c in cats]
         fig.add_trace(go.Scatterpolar(
             r=vals + [vals[0]], theta=cats + [cats[0]], name=destacar, fill="toself",
-            line=dict(color=C_DESTACA, width=2.5, dash="dot"), fillcolor=C_DESTACA,
-            opacity=0.3, hovertemplate="%{theta}: %{r:.0f}%<extra>" + destacar + "</extra>"))
+            line=dict(color=C_DESTACA, width=4),          # línea sólida gruesa = resalta sobre
+            fillcolor=_rgba(C_DESTACA, 0.10),             # las capas; relleno casi transparente
+            hovertemplate="%{theta}: %{r:.0f}%<extra>" + destacar + "</extra>"))
     fig.update_layout(polar=dict(
         bgcolor="rgba(0,0,0,0)",
         radialaxis=dict(range=[0, 95], tickvals=[20, 40, 60, 80], ticksuffix="%",
