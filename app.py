@@ -239,7 +239,7 @@ def fig_choropleth(modo="% internet fija", destacar=None):
     return fig
 
 
-def fig_radar(destacar=None):
+def fig_radar(destacar=None, uirev=0):
     cats = ["Internet móvil", "Computador", "Internet fija", "Tablet"]
     fig = go.Figure()
     for region, color in ACENTOS.items():
@@ -263,11 +263,18 @@ def fig_radar(destacar=None):
         angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#CFC6B2")))
     fig = _style(fig, 500, legend_bottom=False)
     # Se encoge el área polar (deja una banda abajo) para que la leyenda no la tape.
+    # uirevision constante => el zoom persiste entre interacciones; cambia solo con
+    # el botón "Restablecer vista" (bump del contador) => entonces Plotly resetea.
     fig.update_layout(margin=dict(l=70, r=70, t=20, b=8),
+                      uirevision=f"radar-{uirev}",
                       polar=dict(domain=dict(y=[0.16, 1.0])),
                       legend=dict(orientation="h", yanchor="top", y=0.11,
                                   xanchor="center", x=0.5))
     return fig
+
+
+def _reset_radar():
+    st.session_state.radar_rev = st.session_state.get("radar_rev", 0) + 1
 
 
 def fig_slope(destacar=None):
@@ -391,7 +398,12 @@ with tab_plots:
     with r2r:
         st.markdown("**5 · Perfiles de conectividad regional**")
         st.caption("Cuatro servicios para tres regiones contrastantes (% de hogares).")
-        st.plotly_chart(fig_radar(destacar), width="stretch", key="radar")
+        st.plotly_chart(fig_radar(destacar, st.session_state.get("radar_rev", 0)),
+                        width="stretch", key="radar",
+                        config={"displayModeBar": True, "displaylogo": False})
+        st.button("↩️ Restablecer vista del radar", key="reset_radar",
+                  on_click=_reset_radar,
+                  help="Vuelve el radar a su vista original (deshace el zoom o desplazamiento).")
 
     r3l, r3r = st.columns(2)
     with r3l:
