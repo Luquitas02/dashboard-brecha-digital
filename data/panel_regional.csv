@@ -1,0 +1,81 @@
+region_nombre,servicio_nombre,porcentaje
+Tarapacá,Telefonía móvil,98.3
+Antofagasta,Telefonía móvil,98.7
+Atacama,Telefonía móvil,98.3
+Coquimbo,Telefonía móvil,98.1
+Valparaíso,Telefonía móvil,98.1
+O'Higgins,Telefonía móvil,98.0
+Maule,Telefonía móvil,98.2
+Biobío,Telefonía móvil,98.0
+La Araucanía,Telefonía móvil,97.2
+Los Lagos,Telefonía móvil,98.0
+Aysén,Telefonía móvil,98.1
+Magallanes,Telefonía móvil,98.5
+Metropolitana,Telefonía móvil,98.4
+Los Ríos,Telefonía móvil,97.4
+Arica y Parinacota,Telefonía móvil,98.0
+Ñuble,Telefonía móvil,97.9
+Tarapacá,Computador,51.1
+Antofagasta,Computador,57.9
+Atacama,Computador,49.4
+Coquimbo,Computador,50.7
+Valparaíso,Computador,54.8
+O'Higgins,Computador,49.3
+Maule,Computador,47.2
+Biobío,Computador,55.0
+La Araucanía,Computador,44.9
+Los Lagos,Computador,47.5
+Aysén,Computador,51.5
+Magallanes,Computador,59.9
+Metropolitana,Computador,61.3
+Los Ríos,Computador,48.8
+Arica y Parinacota,Computador,52.8
+Ñuble,Computador,43.9
+Tarapacá,Tablet,25.2
+Antofagasta,Tablet,30.0
+Atacama,Tablet,23.5
+Coquimbo,Tablet,22.3
+Valparaíso,Tablet,25.4
+O'Higgins,Tablet,20.6
+Maule,Tablet,18.4
+Biobío,Tablet,22.9
+La Araucanía,Tablet,17.2
+Los Lagos,Tablet,19.3
+Aysén,Tablet,20.7
+Magallanes,Tablet,28.8
+Metropolitana,Tablet,29.7
+Los Ríos,Tablet,19.8
+Arica y Parinacota,Tablet,24.5
+Ñuble,Tablet,16.5
+Tarapacá,Internet fija,67.6
+Antofagasta,Internet fija,73.9
+Atacama,Internet fija,54.2
+Coquimbo,Internet fija,57.1
+Valparaíso,Internet fija,64.6
+O'Higgins,Internet fija,54.9
+Maule,Internet fija,51.4
+Biobío,Internet fija,64.5
+La Araucanía,Internet fija,45.4
+Los Lagos,Internet fija,48.3
+Aysén,Internet fija,48.0
+Magallanes,Internet fija,74.5
+Metropolitana,Internet fija,75.2
+Los Ríos,Internet fija,49.9
+Arica y Parinacota,Internet fija,68.8
+Ñuble,Internet fija,44.5
+Tarapacá,Internet móvil,88.2
+Antofagasta,Internet móvil,90.2
+Atacama,Internet móvil,87.6
+Coquimbo,Internet móvil,85.7
+Valparaíso,Internet móvil,88.1
+O'Higgins,Internet móvil,84.9
+Maule,Internet móvil,83.5
+Biobío,Internet móvil,85.4
+La Araucanía,Internet móvil,81.5
+Los Lagos,Internet móvil,85.4
+Aysén,Internet móvil,84.0
+Magallanes,Internet móvil,88.3
+Metropolitana,Internet móvil,89.4
+Los Ríos,Internet móvil,83.8
+Arica y Parinacota,Internet móvil,86.1
+Ñuble,Internet móvil,81.9
