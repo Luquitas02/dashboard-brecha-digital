@@ -239,7 +239,7 @@ def fig_choropleth(modo="% internet fija", destacar=None, height=560):
     return fig
 
 
-def fig_radar(destacar=None):
+def fig_radar(destacar=None, uirev=0):
     cats = ["Internet móvil", "Computador", "Internet fija", "Tablet"]
     fig = go.Figure()
     for region, color in ACENTOS.items():
@@ -261,13 +261,19 @@ def fig_radar(destacar=None):
         radialaxis=dict(range=[0, 95], tickvals=[20, 40, 60, 80], ticksuffix="%",
                         gridcolor="#CFC6B2"),
         angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#CFC6B2")))
-    fig = _style(fig, 460, legend_bottom=False)
+    fig = _style(fig, 420, legend_bottom=False)
     # Se encoge el área polar (deja una banda abajo) para que la leyenda no la tape.
+    # uirevision: cambia solo al pulsar "Restablecer vista" -> Plotly resetea el zoom.
     fig.update_layout(margin=dict(l=70, r=70, t=20, b=8),
+                      uirevision=f"radar-{uirev}",
                       polar=dict(domain=dict(y=[0.16, 1.0])),
                       legend=dict(orientation="h", yanchor="top", y=0.11,
                                   xanchor="center", x=0.5))
     return fig
+
+
+def _reset_radar():
+    st.session_state.radar_rev = st.session_state.get("radar_rev", 0) + 1
 
 
 def fig_slope(destacar=None):
@@ -391,7 +397,14 @@ with tab_plots:
     with r2r.container(border=True, height=580):
         st.markdown("**5 · Perfiles de conectividad regional**")
         st.caption("Cuatro servicios para tres regiones contrastantes (% de hogares).")
-        st.plotly_chart(fig_radar(destacar), width="stretch", key="radar")
+        # Plotly no da botón de reset a los gráficos polares en su modebar, así que va
+        # como botón aparte (devuelve el radar a su vista original).
+        st.plotly_chart(fig_radar(destacar, st.session_state.get("radar_rev", 0)),
+                        width="stretch", key="radar")
+        st.button("↩️ Restablecer vista", key="reset_radar", on_click=_reset_radar,
+                  width="stretch",
+                  help="Devuelve el radar a su vista original (el modebar de Plotly no trae "
+                       "reset para gráficos polares). También funciona doble-clic.")
 
     r3l, r3r = st.columns(2)
     with r3l.container(border=True, height=580):
