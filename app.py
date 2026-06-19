@@ -90,10 +90,45 @@ def load_panels():
     return reg, ra, bub, slo
 
 
+@st.cache_data
+def region_views(_gj):
+    """Centro y zoom aproximados por región para hacer zoom a la región resaltada.
+    Usa el centroide de cada comuna y mediana/percentiles (robusto a comunas-isla
+    lejanas, ej. Juan Fernández en Valparaíso, que distorsionarían un bbox crudo)."""
+    import math
+    pts = {}
+
+    def coords(c, xs, ys):
+        if isinstance(c[0][0], (int, float)):          # anillo de [lon, lat]
+            for lon, lat in c:
+                xs.append(lon); ys.append(lat)
+        else:
+            for sub in c:
+                coords(sub, xs, ys)
+
+    for feat in _gj["features"]:
+        rn = feat["properties"].get("region_nombre")
+        if not rn:
+            continue
+        xs, ys = [], []
+        coords(feat["geometry"]["coordinates"], xs, ys)
+        pts.setdefault(rn, []).append((np.mean(xs), np.mean(ys)))  # centroide de la comuna
+    views = {}
+    for rn, arr in pts.items():
+        lon = np.array([p[0] for p in arr]); lat = np.array([p[1] for p in arr])
+        span = max(np.percentile(lon, 95) - np.percentile(lon, 5),
+                   np.percentile(lat, 95) - np.percentile(lat, 5), 0.4)
+        zoom = max(4.0, min(7.0, math.log2(360.0 / span) - 0.9))
+        views[rn] = {"center": {"lat": float(np.median(lat)), "lon": float(np.median(lon))},
+                     "zoom": zoom}
+    return views
+
+
 df, GEO, S = load_spatial()
 REG, RA, BUB, SLO = load_panels()
 MATRIZ = REG.pivot(index="region_nombre", columns="servicio_nombre", values="porcentaje")
 SLO_REGIONS = set(SLO["region_nombre"])
+VIEWS = region_views(GEO)
 
 
 # ---------------------------------------------------------------- Constructores de gráficos
@@ -163,12 +198,15 @@ def fig_bubble():
     return _style(fig, 470)
 
 
-def fig_choropleth(modo="% internet fija"):
+def fig_choropleth(modo="% internet fija", destacar=None):
+    view = VIEWS.get(destacar) if destacar else None
+    center = view["center"] if view else {"lat": -43.5, "lon": -72.0}
+    zoom = view["zoom"] if view else 2.85
     if modo == "% internet fija":
         fig = px.choropleth_map(
             df, geojson=GEO, locations="CUT", color="tiene_internet_fija",
             color_continuous_scale="Blues", range_color=(0, 100),
-            map_style="carto-positron", zoom=2.85, center={"lat": -43.5, "lon": -72.0},
+            map_style="carto-positron", zoom=zoom, center=center,
             opacity=0.8, hover_name="comuna_nombre",
             hover_data={"region_nombre": True, "tiene_internet_fija": ":.1f", "CUT": False},
             labels={"tiene_internet_fija": "% internet fija"})
@@ -177,7 +215,7 @@ def fig_choropleth(modo="% internet fija"):
             df, geojson=GEO, locations="CUT", color="lisa_label",
             color_discrete_map=CLUSTER_COLORS,
             category_orders={"lisa_label": list(CLUSTER_COLORS)},
-            map_style="carto-positron", zoom=2.85, center={"lat": -43.5, "lon": -72.0},
+            map_style="carto-positron", zoom=zoom, center=center,
             opacity=0.8, hover_name="comuna_nombre",
             hover_data={"region_nombre": True, "tiene_internet_fija": ":.1f", "CUT": False},
             labels={"lisa_label": "Cluster"})
@@ -194,7 +232,8 @@ def fig_radar(destacar=None):
         vals = [MATRIZ.loc[region, c] for c in cats]
         fig.add_trace(go.Scatterpolar(
             r=vals + [vals[0]], theta=cats + [cats[0]], name=region, fill="toself",
-            line=dict(color=color, width=2.5), fillcolor=color, opacity=0.55,
+            line=dict(color=color, width=4.5 if region == destacar else 2.5),
+            fillcolor=color, opacity=0.55,
             hovertemplate="%{theta}: %{r:.0f}%<extra>" + region + "</extra>"))
     if destacar and destacar not in ACENTOS and destacar in MATRIZ.index:
         vals = [MATRIZ.loc[destacar, c] for c in cats]
@@ -227,7 +266,7 @@ def fig_slope(destacar=None):
         row = SLO[SLO["region_nombre"] == region].iloc[0]
         ys = [row["pct_2017"], row["pct_2022"], row["pct_2024"]]
         fig.add_trace(go.Scatter(x=YEARS, y=ys, name=region, mode="lines+markers+text",
-                                 line=dict(color=color, width=2.6),
+                                 line=dict(color=color, width=4.5 if region == destacar else 2.6),
                                  text=[f"{v:.0f}%" for v in ys],
                                  textposition=TXTPOS.get(region, "top center"),
                                  textfont=dict(color=color, size=11),
@@ -244,17 +283,21 @@ def fig_slope(destacar=None):
 
 
 def fig_histograma():
+    m = df["tiene_internet_fija"].mean()
     fig = px.histogram(df, x="tiene_internet_fija", nbins=26,
                        color_discrete_sequence=[NAVY],
                        labels={"tiene_internet_fija": "% hogares con internet fija (comuna)"})
     fig.update_traces(marker_line_color="white", marker_line_width=0.5,
                       hovertemplate="%{x}<br>%{y} comunas<extra></extra>")
-    fig.add_vline(x=df["tiene_internet_fija"].mean(), line=dict(color=C_RURAL, dash="dash"),
-                  annotation_text=f"Promedio {coma(df['tiene_internet_fija'].mean(), 0)}%",
-                  annotation_position="top")
+    fig.add_vline(x=m, line=dict(color=C_RURAL, dash="dash", width=2))
+    fig.add_annotation(x=m, xref="x", yref="paper", y=1.07,
+                       text=f"Promedio comunal: {coma(m, 0)}%", showarrow=False,
+                       font=dict(color=C_RURAL, size=12), xanchor="left", xshift=4)
     fig.update_yaxes(title="N° de comunas", showgrid=True, gridcolor="#e6e2d8")
-    fig.update_xaxes(showgrid=False)
-    return _style(fig, 340, legend_bottom=False)
+    fig.update_xaxes(title="% hogares con internet fija (comuna)", showgrid=False)
+    fig = _style(fig, 380, legend_bottom=False)
+    fig.update_layout(margin=dict(l=10, r=10, t=36, b=10))   # aire arriba para la anotación
+    return fig
 
 
 # ---------------------------------------------------------------- Sidebar (interacción cruzada)
@@ -262,8 +305,9 @@ with st.sidebar:
     st.header("🔎 Explorar")
     sel = st.selectbox("Resaltar una región", ["(ninguna)"] + ORDEN_REGIONES, index=0)
     destacar = None if sel == "(ninguna)" else sel
-    st.caption("Resalta la región elegida en el **heatmap, el dumbbell, el radar y la "
-               "evolución** a la vez (pestaña «Los 6 gráficos»).")
+    st.caption("Resalta la región en el **heatmap, dumbbell, radar y evolución** (pestaña 1), "
+               "y **centra el mapa + marca sus comunas en el diagrama de Moran** (pestaña 2). "
+               "El gráfico 3 (por edad/educación) es nacional y no depende de la región.")
     st.divider()
     st.caption("Censo 2024 (INE) · CASEN 2017/2022/2024 (MDSF)")
     with open(os.path.join(DATA, "comunas.csv"), "rb") as f:
@@ -311,7 +355,7 @@ with tab_plots:
         st.markdown("**4 · Internet fija por comuna**")
         st.caption("% de hogares con internet fija por comuna (343). Zoom y paneo disponibles; "
                    "clusters en la pestaña espacial.")
-        st.plotly_chart(fig_choropleth(), width="stretch", key="map_main")
+        st.plotly_chart(fig_choropleth(destacar=destacar), width="stretch", key="map_main")
 
     r2l, r2r = st.columns(2)
     with r2l:
@@ -357,7 +401,9 @@ with tab_spatial:
     left, right = st.columns([3, 2])
     with left:
         modo = st.radio("Mapa:", ["% internet fija", "Clusters LISA"], horizontal=True)
-        st.plotly_chart(fig_choropleth(modo), width="stretch", key="map_spatial")
+        if destacar:
+            st.caption(f"🟣 Mapa centrado en **{destacar}**.")
+        st.plotly_chart(fig_choropleth(modo, destacar), width="stretch", key="map_spatial")
 
     with right:
         st.markdown("**Diagrama de dispersión de Moran**")
@@ -376,6 +422,13 @@ with tab_spatial:
                                 name=f"Pendiente = I ({coma(S['moran_I'], 2)})"))
         sc.add_hline(y=0, line=dict(color="#999", width=1))
         sc.add_vline(x=0, line=dict(color="#999", width=1))
+        if destacar:
+            sub = df[df["region_nombre"] == destacar]
+            sc.add_trace(go.Scatter(
+                x=sub["z"], y=sub["lag_z"], mode="markers", name=f"⬤ {destacar}",
+                marker=dict(size=12, color="rgba(0,0,0,0)",
+                            line=dict(color=C_DESTACA, width=2.5)),
+                text=sub["comuna_nombre"], hoverinfo="text"))
         sc.update_layout(height=470, margin=dict(l=0, r=0, t=0, b=0),
                          paper_bgcolor="rgba(0,0,0,0)",
                          legend=dict(orientation="h", y=-0.25, font=dict(size=10)))
