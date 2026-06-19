@@ -512,9 +512,9 @@ with tab_spatial:
                .rename(columns={"comuna_nombre": "Comuna", "tiene_internet_fija": "%"}))
         bot = (df.nsmallest(5, "tiene_internet_fija")[["comuna_nombre", "tiene_internet_fija"]]
                .rename(columns={"comuna_nombre": "Comuna", "tiene_internet_fija": "%"}))
-        st.caption("🔝 5 más conectadas")
+        st.caption(":green[▲] 5 más conectadas")
         st.dataframe(top.round(1), width="stretch", hide_index=True, height=215)
-        st.caption("🔻 5 menos conectadas")
+        st.caption(":red[▼] 5 menos conectadas")
         st.dataframe(bot.round(1), width="stretch", hide_index=True, height=215)
 
     with st.expander("Ver tabla completa de comunas"):
