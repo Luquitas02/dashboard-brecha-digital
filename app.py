@@ -31,7 +31,7 @@ FONDO = "#F4F0E8"
 ACENTOS = {"Metropolitana": "#2C5F8A", "O'Higgins": "#C8702D", "La Araucanía": "#3C8C8C"}
 C_URBANO, C_RURAL = "#2C5F8A", "#C8702D"
 C_PROM, C_RESTO = "#333333", "#B8B2A6"
-C_DESTACA = "#7A3FA0"   # morado para la región resaltada por el selector (no choca con la paleta)
+C_DESTACA = "#E0A012"   # ámbar/dorado para resaltar: complementario al azul, distinto del resto
 PALETA_BUBBLE = {"Básica o menos": "#d73027", "Media": "#fc8d59",
                  "Técnica/Sup. inc.": "#91bfdb", "Superior completa": "#4575b4"}
 PROM_REGIONAL = 44.6
@@ -252,9 +252,11 @@ def fig_radar(destacar=None):
         radialaxis=dict(range=[0, 95], tickvals=[20, 40, 60, 80], ticksuffix="%",
                         gridcolor="#CFC6B2"),
         angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#CFC6B2")))
-    fig = _style(fig, 470, legend_bottom=False)
-    fig.update_layout(margin=dict(l=70, r=70, t=20, b=20),
-                      legend=dict(orientation="h", yanchor="top", y=-0.02,
+    fig = _style(fig, 500, legend_bottom=False)
+    # Se encoge el área polar (deja una banda abajo) para que la leyenda no la tape.
+    fig.update_layout(margin=dict(l=70, r=70, t=20, b=8),
+                      polar=dict(domain=dict(y=[0.16, 1.0])),
+                      legend=dict(orientation="h", yanchor="top", y=0.11,
                                   xanchor="center", x=0.5))
     return fig
 
@@ -439,7 +441,7 @@ with tab_spatial:
         if destacar:
             sub = df[df["region_nombre"] == destacar]
             sc.add_trace(go.Scatter(
-                x=sub["z"], y=sub["lag_z"], mode="markers", name=f"⬤ {destacar}",
+                x=sub["z"], y=sub["lag_z"], mode="markers", name=f"{destacar} (resaltada)",
                 marker=dict(size=12, color="rgba(0,0,0,0)",
                             line=dict(color=C_DESTACA, width=2.5)),
                 text=sub["comuna_nombre"], hoverinfo="text"))
