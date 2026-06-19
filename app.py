@@ -159,7 +159,7 @@ def fig_heatmap(destacar=None):
                       y0=pos - 0.5, y1=pos + 0.5,
                       line=dict(color=C_DESTACA, width=3))
     fig.update_yaxes(autorange="reversed")
-    return _style(fig, 470, legend_bottom=False)
+    return _style(fig, 460, legend_bottom=False)
 
 
 def fig_dumbbell(destacar=None):
@@ -190,7 +190,7 @@ def fig_dumbbell(destacar=None):
     fig.update_xaxes(title="Hogares con internet fija (%)", range=[0, 92],
                      showgrid=True, gridcolor="#D8CFBD")
     fig.update_yaxes(autorange="reversed")
-    return _style(fig, 470)
+    return _style(fig, 460)
 
 
 def fig_bubble():
@@ -203,10 +203,10 @@ def fig_bubble():
     fig.update_traces(marker=dict(opacity=0.8, line=dict(width=0.5, color="white")))
     fig.update_xaxes(showgrid=True, gridcolor="#D8CFBD")
     fig.update_yaxes(showgrid=True, gridcolor="#D8CFBD")
-    return _style(fig, 470)
+    return _style(fig, 460)
 
 
-def fig_choropleth(modo="% internet fija", destacar=None):
+def fig_choropleth(modo="% internet fija", destacar=None, height=560):
     view = VIEWS.get(destacar) if destacar else None
     center = view["center"] if view else {"lat": -43.5, "lon": -72.0}
     zoom = view["zoom"] if view else 2.85
@@ -233,7 +233,7 @@ def fig_choropleth(modo="% internet fija", destacar=None):
             geojson=GEO, locations=sub["CUT"], z=[1] * len(sub),
             colorscale=[[0, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0)"]], showscale=False,
             marker=dict(line=dict(color=C_DESTACA, width=2)), hoverinfo="skip"))
-    fig.update_layout(height=560, margin=dict(l=0, r=0, t=0, b=0),
+    fig.update_layout(height=height, margin=dict(l=0, r=0, t=0, b=0),
                       paper_bgcolor="rgba(0,0,0,0)",
                       legend=dict(orientation="h", y=-0.02))
     return fig
@@ -261,7 +261,7 @@ def fig_radar(destacar=None):
         radialaxis=dict(range=[0, 95], tickvals=[20, 40, 60, 80], ticksuffix="%",
                         gridcolor="#CFC6B2"),
         angularaxis=dict(rotation=90, direction="clockwise", gridcolor="#CFC6B2")))
-    fig = _style(fig, 500, legend_bottom=False)
+    fig = _style(fig, 460, legend_bottom=False)
     # Se encoge el área polar (deja una banda abajo) para que la leyenda no la tape.
     fig.update_layout(margin=dict(l=70, r=70, t=20, b=8),
                       polar=dict(domain=dict(y=[0.16, 1.0])),
@@ -296,7 +296,7 @@ def fig_slope(destacar=None):
                                  hovertemplate="%{x}: %{y:.0f}%<extra>" + destacar + "</extra>"))
     fig.update_yaxes(title="Hogares con internet fija (%)", range=[20, 82],
                      showgrid=True, gridcolor="#D8CFBD")
-    return _style(fig, 470)
+    return _style(fig, 460)
 
 
 def fig_histograma():
@@ -312,7 +312,7 @@ def fig_histograma():
                        font=dict(color=C_RURAL, size=12), xanchor="left", xshift=4)
     fig.update_yaxes(title="N° de comunas", showgrid=True, gridcolor="#D8CFBD")
     fig.update_xaxes(title="% hogares con internet fija (comuna)", showgrid=False)
-    fig = _style(fig, 380, legend_bottom=False)
+    fig = _style(fig, 430, legend_bottom=False)
     fig.update_layout(margin=dict(l=10, r=10, t=36, b=10))   # aire arriba para la anotación
     return fig
 
@@ -373,34 +373,32 @@ with tab_plots:
                    "falta y a quién · derecha 4–6: dónde y cuándo.")
 
     r1l, r1r = st.columns(2)
-    with r1l.container(border=True):
+    with r1l.container(border=True, height=580):
         st.markdown("**1 · Servicios de conectividad por región**")
         st.caption("% de hogares con cada servicio por región (Censo 2024).")
         st.plotly_chart(fig_heatmap(destacar), width="stretch", key="hm")
-    with r1r.container(border=True):
+    with r1r.container(border=True, height=580):
         st.markdown("**4 · Internet fija por comuna**")
-        st.caption("% de hogares con internet fija por comuna (343). Zoom y paneo disponibles; "
-                   "clusters en la pestaña espacial.")
-        st.plotly_chart(fig_choropleth(destacar=destacar), width="stretch", key="map_main")
+        st.caption("% de hogares con internet fija por comuna (343). Clusters en la pestaña espacial.")
+        st.plotly_chart(fig_choropleth(destacar=destacar, height=460), width="stretch",
+                        key="map_main")
 
     r2l, r2r = st.columns(2)
-    with r2l.container(border=True):
+    with r2l.container(border=True, height=580):
         st.markdown("**2 · Acceso urbano vs rural**")
-        st.caption("Internet fija por región: hogares urbanos (navy) y rurales (terracota); "
-                   "la brecha en pp a la derecha.")
+        st.caption("Internet fija urbano (navy) vs rural (terracota); brecha en pp a la derecha.")
         st.plotly_chart(fig_dumbbell(destacar), width="stretch", key="db")
-    with r2r.container(border=True):
+    with r2r.container(border=True, height=580):
         st.markdown("**5 · Perfiles de conectividad regional**")
         st.caption("Cuatro servicios para tres regiones contrastantes (% de hogares).")
         st.plotly_chart(fig_radar(destacar), width="stretch", key="radar")
 
     r3l, r3r = st.columns(2)
-    with r3l.container(border=True):
+    with r3l.container(border=True, height=580):
         st.markdown("**3 · Acceso por edad y nivel educativo**")
-        st.caption("% con internet fija por edad del jefe de hogar y nivel educativo; "
-                   "el tamaño de la burbuja es el N° de hogares.")
+        st.caption("% con internet fija por edad y nivel educativo; tamaño = N° de hogares.")
         st.plotly_chart(fig_bubble(), width="stretch", key="bub")
-    with r3r.container(border=True):
+    with r3r.container(border=True, height=580):
         st.markdown("**6 · Evolución del acceso (CASEN 2017–2024)**")
         st.caption("% de hogares con internet fija en 2017, 2022 y 2024.")
         st.plotly_chart(fig_slope(destacar), width="stretch", key="slope")
@@ -425,13 +423,13 @@ with tab_spatial:
             "rezago (Bajo-Bajo).")
 
     left, right = st.columns([3, 2])
-    with left.container(border=True):
+    with left.container(border=True, height=690):
         modo = st.radio("Mapa:", ["% internet fija", "Clusters LISA"], horizontal=True)
         if destacar:
             st.caption(f"🟣 Mapa centrado en **{destacar}**.")
         st.plotly_chart(fig_choropleth(modo, destacar), width="stretch", key="map_spatial")
 
-    with right.container(border=True):
+    with right.container(border=True, height=690):
         st.markdown("**Diagrama de dispersión de Moran**")
         st.caption("Eje X: conectividad (estandarizada). Eje Y: promedio de los vecinos. "
                    "La pendiente es el Moran's I; cada cuadrante es un tipo de cluster.")
@@ -455,9 +453,9 @@ with tab_spatial:
                 marker=dict(size=12, color="rgba(0,0,0,0)",
                             line=dict(color=C_DESTACA, width=2.5)),
                 text=sub["comuna_nombre"], hoverinfo="text"))
-        sc.update_layout(height=470, margin=dict(l=0, r=0, t=0, b=0),
+        sc.update_layout(height=560, margin=dict(l=0, r=0, t=0, b=0),
                          paper_bgcolor="rgba(0,0,0,0)",
-                         legend=dict(orientation="h", y=-0.25, font=dict(size=10)))
+                         legend=dict(orientation="h", y=-0.22, font=dict(size=10)))
         st.plotly_chart(sc, width="stretch", key="moran")
 
     st.markdown("##### Clusters significativos (LISA, p < 0,05)")
@@ -471,12 +469,12 @@ with tab_spatial:
 
     st.divider()
     h_col, t_col = st.columns([3, 2])
-    with h_col.container(border=True):
+    with h_col.container(border=True, height=560):
         st.markdown("**Distribución del acceso entre comunas**")
         st.caption("Cuántas comunas hay en cada nivel de internet fija. La cola izquierda "
                    "(comunas muy rezagadas) es la que tira el promedio comunal hacia abajo.")
         st.plotly_chart(fig_histograma(), width="stretch", key="hist")
-    with t_col.container(border=True):
+    with t_col.container(border=True, height=560):
         st.markdown("**Comunas extremas**")
         top = (df.nlargest(5, "tiene_internet_fija")[["comuna_nombre", "tiene_internet_fija"]]
                .rename(columns={"comuna_nombre": "Comuna", "tiene_internet_fija": "%"}))
