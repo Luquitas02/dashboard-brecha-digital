@@ -364,6 +364,10 @@ k3.metric("Brecha urbano-rural", f"{RA['brecha'].mean():.0f} pp",
 k4.metric("Promedio comunal", f"{S['metric_mean']:.0f}%",
           help="Media simple de las 343 comunas (base del mapa)")
 k5.metric("Comunas analizadas", f"{S['n_comunas']}")
+st.caption(
+    f"ℹ️ El **promedio comunal** ({S['metric_mean']:.0f}%) pesa cada comuna por igual (es la "
+    f"base del mapa); el **acceso nacional** ({nat['pct_2024']:.0f}%) pondera por población. "
+    "Difieren porque la mayoría de los hogares está en comunas urbanas, más conectadas.")
 
 tab_plots, tab_spatial, tab_rep = st.tabs(
     ["📊 Los 6 gráficos (interactivos)", "🗺️ Análisis espacial interactivo", "📄 Reporte A4"])
