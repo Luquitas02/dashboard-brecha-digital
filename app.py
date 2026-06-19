@@ -50,6 +50,17 @@ ABREV_X = {"Telefonía móvil": "Tel. móvil", "Internet móvil": "Int. móvil",
            "Internet fija": "Int. fija", "Computador": "Computador", "Tablet": "Tablet"}
 YEARS = ["CASEN 2017", "CASEN 2022", "CASEN 2024"]
 
+# Síntesis = misma leyenda-resumen del reporte A4 (mantiene alineación con el reporte).
+SINTESIS = (
+    "La telefonía móvil es casi universal (97–99%): la brecha digital se concentra en la "
+    "internet fija y el equipamiento del hogar, donde las regiones más se distancian. Es una "
+    "brecha territorial que se agrupa en el espacio de forma significativa (Moran's I = 0,48; "
+    "p < 0,001): un núcleo central conectado frente a un norte y un extremo sur rezagados. Y es "
+    "interna: en las 16 regiones los hogares urbanos superan a los rurales; y social, porque el "
+    "acceso acompaña el nivel educativo y la edad del jefe de hogar. Entre 2017 y 2024 el acceso "
+    "crece en todas las regiones, pero las que partieron atrás siguen últimas: la brecha se "
+    "reduce, sin cerrarse.")
+
 
 def coma(x, d=2):
     """Formatea con coma decimal (convención en español)."""
@@ -419,6 +430,10 @@ with tab_plots:
         st.markdown("**6 · Evolución del acceso (CASEN 2017–2024)**")
         st.caption("% de hogares con internet fija en 2017, 2022 y 2024.")
         st.plotly_chart(fig_slope(destacar), width="stretch", key="slope")
+
+    with st.container(border=True):
+        st.markdown("**📝 Síntesis**")
+        st.markdown(SINTESIS)
 
 # ---------------------------------------------------------------- Espacial
 with tab_spatial:
